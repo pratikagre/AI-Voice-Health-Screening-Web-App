@@ -90,8 +90,10 @@ export function useWebSocket(
     }
 
     setStatus('connecting');
-    // Connect to backend port 5000
-    const socket = new WebSocket('ws://localhost:5000');
+    // Read from Vite environment variable or fall back to local dev port 5000
+    const wsUrl = import.meta.env.VITE_WS_URL || 'ws://localhost:5000';
+    console.log(`[WS] Connecting to: ${wsUrl}`);
+    const socket = new WebSocket(wsUrl);
     wsRef.current = socket;
 
     socket.onopen = () => {
