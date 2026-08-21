@@ -94,7 +94,7 @@ export function setupCallWebSocket(wss) {
 
             } catch (err) {
               console.error('[WS] Error processing speech stop:', err);
-              ws.send(JSON.stringify({ event: 'ERROR', message: 'Failed to transcribe audio. Please try speaking again.' }));
+              ws.send(JSON.stringify({ event: 'ERROR', message: `Failed to transcribe audio: ${err.message}` }));
               ws.send(JSON.stringify({ event: 'STATUS', status: 'IDLE' }));
               session.isProcessing = false;
             }
@@ -121,7 +121,7 @@ export function setupCallWebSocket(wss) {
               await handleUserSpeechText(text);
             } catch (err) {
               console.error('[WS] Error processing client text:', err);
-              ws.send(JSON.stringify({ event: 'ERROR', message: 'Failed to process speech input.' }));
+              ws.send(JSON.stringify({ event: 'ERROR', message: `Failed to process speech input: ${err.message}` }));
               ws.send(JSON.stringify({ event: 'STATUS', status: 'IDLE' }));
               session.isProcessing = false;
             }

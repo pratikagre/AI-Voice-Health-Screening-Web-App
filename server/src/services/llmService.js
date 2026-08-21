@@ -38,7 +38,10 @@ if (config.GEMINI_API_KEY) {
  * @returns {Promise<string>}
  */
 export async function getAIResponse(history) {
-  // If we have OpenAI and the user has chosen it (or by default)
+  let openaiError = null;
+  let geminiError = null;
+
+  // Try OpenAI
   if (openaiClient) {
     try {
       console.log('[LLM] Calling OpenAI API (gpt-4o-mini)...');
@@ -54,11 +57,12 @@ export async function getAIResponse(history) {
       });
       return completion.choices[0].message.content.trim();
     } catch (error) {
-      console.error('[LLM] OpenAI Error, falling back to Gemini if available:', error);
+      console.error('[LLM] OpenAI Error:', error);
+      openaiError = error;
     }
   }
 
-  // Fallback to Gemini
+  // Try Gemini
   if (geminiClient) {
     try {
       console.log('[LLM] Calling Gemini API (gemini-2.0-flash)...');
@@ -82,9 +86,18 @@ export async function getAIResponse(history) {
       return response.text.trim();
     } catch (error) {
       console.error('[LLM] Gemini Error:', error);
-      throw new Error('All LLM providers failed.');
+      geminiError = error;
     }
   }
 
-  throw new Error('No LLM provider configured. Please provide GEMINI_API_KEY or OPENAI_API_KEY.');
+  // Error reports
+  if (openaiError && geminiError) {
+    throw new Error(`OpenAI: ${openaiError.message} | Gemini: ${geminiError.message}`);
+  } else if (openaiError) {
+    throw new Error(`OpenAI Error: ${openaiError.message}`);
+  } else if (geminiError) {
+    throw new Error(`Gemini Error: ${geminiError.message}`);
+  }
+
+  throw new Error('No LLM provider configured. Please check GEMINI_API_KEY or OPENAI_API_KEY environment variables.');
 }
