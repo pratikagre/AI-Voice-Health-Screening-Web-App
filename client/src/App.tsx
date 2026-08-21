@@ -26,6 +26,7 @@ export function App() {
   const selectedLanguageRef = useRef(selectedLanguage);
   const speakingModeRef = useRef(speakingMode);
   const pipelineModeRef = useRef(pipelineMode);
+  const interimUserTextRef = useRef('');
 
   useEffect(() => { selectedLanguageRef.current = selectedLanguage; }, [selectedLanguage]);
   useEffect(() => { speakingModeRef.current = speakingMode; }, [speakingMode]);
@@ -107,11 +108,12 @@ export function App() {
       stopUserSpeech(mimeType);
     } else {
       // Hybrid mode: send transcribed local text to backend
-      if (interimUserText.trim()) {
-        const textToSend = interimUserText;
+      const textToSend = interimUserTextRef.current;
+      if (textToSend.trim()) {
         setTranscriptHistory(prev => [...prev, { role: 'user', content: textToSend }]);
         sendUserText(textToSend);
         setInterimUserText('');
+        interimUserTextRef.current = '';
       } else {
         // Fall back to connected state if silent
         setWsStatus('connected');
@@ -121,6 +123,7 @@ export function App() {
 
   const handleLocalTranscription = (text: string) => {
     setInterimUserText(text);
+    interimUserTextRef.current = text;
   };
 
   // Instantiate Audio hook
@@ -189,6 +192,7 @@ export function App() {
     setReport(null);
     setErrorMsg(null);
     setInterimUserText('');
+    interimUserTextRef.current = '';
     setWsStatus('disconnected');
   };
 
